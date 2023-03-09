@@ -1,21 +1,21 @@
+# LIBRARIES
 import pandas as pd
 import numpy as np
-
-# Trip distance
-import geopy.distance
 
 # Trip duration
 import datetime
 from datetime import datetime
 
 # Trip distance
+import geopy.distance
 import osmnx as ox
 from osmnx import graph_from_bbox
 import networkx as nx
 import taxicab as tc
 from shapely.geometry import Point, LineString
 
-# 2014
+    # FUNCTIONS FOR OLD CSV FORMAT (E.G. 2014)
+# COLUMN STANDARIZATION
 def rename_columns (df):
     df.rename(columns={
         'tripduration': 'duration','starttime': 'started_at', 'stoptime': 'ended_at', 'start station id': 'start_station_id',
@@ -25,7 +25,8 @@ def rename_columns (df):
         'birth year': 'birth_year', 'gender': 'gender'}, inplace = True)
     return df
 
-# Scalable
+    # FUNCTIONS TO CLEAN ANY CSV FORMAT
+# STRAIGHT LINE DISTANCE
 def trip_distance (df):
     distance_list = []
 
@@ -45,6 +46,7 @@ def trip_distance (df):
     
     return df
 
+# HOUR ONLY (24H FORMAT)
 def get_hour (df):
     start_hour_list = []
     end_hour_list = []
@@ -64,15 +66,12 @@ def get_hour (df):
 
     return df
 
+# DATE WITHOUT TIME
 def get_date (df):
-    datetime_objects_list = []
-    for i, row in df.iterrows():
-        datetime_obj = datetime.strptime(row['started_at'][:10], '%Y-%m-%d')
-        datetime_objects_list.append(datetime_obj)
-
-    df['trip_date'] = datetime_objects_list
+    df['trip_date'] = pd.to_datetime(df['started_at'].apply(lambda x: x[:10]))
     return df
 
+# TURN START AND END TIMES INTO DATETIME FORMAT
 def datetime_format (df):
     started_at = []
     ended_at = []
@@ -91,6 +90,7 @@ def datetime_format (df):
     df['ended_at'] = ended_at
     return df
 
+# GET NOMINAL DAY AND MONTH
 def get_categorical_date (df):
     weekday_list = []
     month_list = []
@@ -111,12 +111,13 @@ def get_categorical_date (df):
 
     return df
 
+# DAY OF THE WEEK IS WEEKDAY OR WEEKEND 
 def is_weekend (df):
     df['weekend'] = df['weekday'].apply(lambda x: 1 if x in ['Saturday', 'Sunday'] else 0)
     return df
 
-def get_real_distance (df):
-
+# REAL TRIP DISTANCE WITH SHORTEST AVAILABLE ROUTE
+def get_graph_from_bbox (df):
     max_start_lat, max_end_lat = df.start_lat.max(), df.end_lat.max()
     max_start_lng, max_end_lng = df.start_lng.max(), df.end_lng.max()
 
@@ -127,9 +128,11 @@ def get_real_distance (df):
     xmax = max(max_start_lng, max_end_lng)
     ymin = min(min_start_lat, min_end_lat)
     xmin = min(min_start_lng, min_end_lng)
-
     G = graph_from_bbox(ymax, ymin, xmin, xmax, network_type='drive', simplify=True)
 
+    return G
+
+def get_real_distance (df, G):
     real_distance_list = []
     for i, row in df.iterrows():
         orig = (row['start_lat'], row['start_lng'])
@@ -144,7 +147,198 @@ def get_real_distance (df):
 
     return df
 
-# 2022
+# NON BIKE TRIPS STATION BALANCE
+def single_station_balance (df, station_name, day):
+    unique_days = df.trip_date.unique()
+    balance_mensual_estacion = []
+    for day in unique_days:
+        llegadas = df[(df['end_station_name'] == station_name) & (df['trip_date'] == day)].shape[0]
+        salidas = df[(df['start_station_name'] == station_name) & (df['trip_date'] == day)].shape[0]
+        balance_mensual_estacion.append(llegadas - salidas)
+    
+    return balance_mensual_estacion
+
+# CHECK IF A BIKE HAS NOT BEEN TRANSPORTED
+def bike_not_transported (df, bike_id, date):  # fix date setting
+    '''
+    If bike is not transported return true
+    '''
+    bike_trips = df[(df['bike_id'] == bike_id) & df['trip_date'] == date]
+    start_list = []
+    end_list = []
+    for i, row in bike_trips.iterrows():  
+        start_list.append(row['start_station_name'])
+        end_list.append(row['end_station_name'])
+
+    start_list = start_list[1:]
+    end_list = end_list[:-1]
+
+    if start_list == end_list:
+        return True
+    else:
+        return False
+
+# BIKE ROUTE
+def bike_route (df, bike_id):
+    bike_trips = df[df['bike_id'] == bike_id]
+    bike_journey = []
+    start_station = []
+    end_station = []
+
+    for index, row in bike_trips.iterrows():
+        start_station.append(row['start_station_name'])
+        end_station.append(row['end_station_name'])
+
+    start_station = start_station[1:]
+    end_station = end_station[:-1]
+
+    for i in range(len(start_station)):
+        next_start, last_end = start_station[i], end_station[i]
+        bike_journey.append((next_start, last_end))
+        
+    return bike_journey
+
+# ALL BIKES' ROUTES
+def all_bikes_journey (df):
+    bikes_journey_list = []
+    for bike_id in df['bike_id'].unique():
+        bikes_journey_list.append(bike_route (df, bike_id))
+    
+    return bikes_journey_list
+
+# DICTIONARY WITH NON BIKE TRIPS INFO
+def non_trip_mobility_dict (df):
+    list_of_start_stations = df.start_station_name.unique().tolist()
+    list_of_end_stations = df.end_station_name.unique().tolist()
+    all_stations = list(set(list_of_start_stations + list_of_end_stations))
+    mobility_dictionary = {}
+
+    for station_name in all_stations:
+        if station_name in list_of_start_stations:
+            mobility_dictionary[station_name] = {
+                'id': df[df['start_station_name'] == station_name].iloc[0]['start_station_id'], 
+                'receives_from': [],
+                'sends_to': [],             
+            }
+        elif station_name in list_of_end_stations:
+            mobility_dictionary[station_name] = {
+                'id': df[df['end_station_name'] == station_name].iloc[0]['end_station_id'], 
+                'receives_from': [],
+                'sends_to': []                
+            }           
+
+    return mobility_dictionary
+
+# FROM WHERE RECEIVES AND WHERE SENDS:
+def transportations (dictionary, bikes_journey_list):
+    for bike_journey in bikes_journey_list:
+        for arrival_departure in bike_journey:
+            if arrival_departure[0] != arrival_departure[1]:
+                dictionary[arrival_departure[1]]['sends_to'].append(arrival_departure[0])
+                dictionary[arrival_departure[0]]['receives_from'].append(arrival_departure[1])
+
+    return dictionary
+
+# STATION BALANCE
+def station_balance (dictionary):
+    for key, value in dictionary.items():
+        value['bikes_received'] = len(value['receives_from'])
+        value['bikes_sent'] = len(value['sends_to'])
+        value['balance'] = (value['bikes_received'] - value['bikes_sent']) 
+        # if receives more than sends (balance > 0): station is likely to be a start point
+        # else if sends more than receives (balance < 0): station is likely to be an end point
+    
+    return dictionary
+
+# SINGLE ID TRUCK TRANSFERS
+def single_bike_truck_transfers (df, bike_id):
+    bike_trips = df[df['bike_id'] == bike_id]
+    last_end_station_name = []
+    last_end_station_id = []
+    last_end_time = []
+    next_start_station_name = []
+    next_start_station_id = []
+    next_start_time = []
+
+
+    for i, row in bike_trips.iterrows():
+        last_end_station_id.append(row['end_station_id'])
+        last_end_station_name.append(row['end_station_name'])
+        last_end_time.append(row['ended_at'])
+        next_start_station_id.append(row['start_station_id'])
+        next_start_station_name.append(row['start_station_name'])
+        next_start_time.append(row['started_at'])
+
+    last_end_station_id = last_end_station_id[:-1]
+    last_end_station_name = last_end_station_name[:-1]
+    last_end_time = last_end_time[:-1]
+
+    next_start_station_id = next_start_station_id[1:]
+    next_start_station_name = next_start_station_name[1:]
+    next_start_time = next_start_time[1:]
+
+    # Definitive lists
+    end_id = []
+    end_name = []
+    end_time = []
+    start_id = []
+    start_name =[]
+    start_time = []
+    bike_id_list = []
+
+    for i in range(len(last_end_station_name)):
+        if last_end_station_id[i] != next_start_station_id[i]:
+            end_id.append(last_end_station_id[i])
+            end_name.append(last_end_station_name[i])
+            end_time.append(last_end_time[i])
+            start_id.append(next_start_station_id[i])
+            start_name.append(next_start_station_name[i])
+            start_time.append(next_start_time[i])
+            bike_id_list.append(bike_id)
+    
+    transfers_df = pd.DataFrame({
+        'last_end_station_id': end_id, 
+        'last_end_station_name': end_name,
+        'last_end_time': end_time,
+        'next_start_station_id': start_id,
+        'next_start_station_name': start_name,
+        'next_start_time': start_time,
+        'bike_id': bike_id_list
+    })
+
+    return transfers_df
+
+# ALL TRANSFERS
+def all_transfers (df):
+    dataframes_list = []
+    for bike_id in df['bike_id'].unique():
+        dataframes_list.append(single_bike_truck_transfers (df, bike_id))
+    
+    all_transfers_df = pd.concat(dataframes_list, ignore_index = True)
+    all_transfers_df.sort_values(by = ['last_end_time'], ascending = True, inplace = True)
+    all_transfers_df.reset_index(drop = True, inplace = True)
+    return all_transfers_df
+
+def datetime_format_trucks (df):
+    last_end_time = []
+    next_start_time = []
+    for i, row in df.iterrows():
+        last = datetime.strptime(row['last_end_time'], '%Y-%m-%d %H:%M:%S')
+        next = datetime.strptime(row['next_start_time'], '%Y-%m-%d %H:%M:%S')
+
+        try:
+            last_end_time.append(last)
+            next_start_time.append(next)
+        except:
+            last_end_time.append(np.nan)
+            next_start_time.append(np.nan)
+
+    df['last_end_time'] = last_end_time
+    df['next_start_time'] = next_start_time
+    return df
+
+
+    # CLEAN NEW FORMAT
 def trip_duration (df):
     duration_list = []
     for i, row in df.iterrows():

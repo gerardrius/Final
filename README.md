@@ -1,5 +1,17 @@
 # Final-Project
 
+09/03/2023:
+What I have achieved:
+
+
+What I want to do:
+    Figure out truck pick ups
+    Big files
+    Streamlit app deployment
+
+
+
+
 **Exploratory Data Analysis**
 
 Cleaning process:
