@@ -9,8 +9,24 @@ What I want to do:
     Big files
     Streamlit app deployment
 
+10/03/2023
+What I achieved yesterday:
+    Big files
+    Deployed app
+    Started visualizations for maps
 
+What I want to achieve:
+    Classify visualizations
+        Stations
+        Demographics
+        Trip information
 
+    Encapsulate into functions
+        Deploy them in Streamlit
+
+    Distance function so that it saves results every x time.
+    
+    
 
 **Exploratory Data Analysis**
 
