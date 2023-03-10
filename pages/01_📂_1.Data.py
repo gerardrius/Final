@@ -3,7 +3,7 @@ import pandas as pd
 import src.streamlit_cleaning as st_cleaning
 
 # Page configuration
-st.set_page_config(page_title="Data Sources", page_icon="📊")
+st.set_page_config(page_title="Data Sources", page_icon="📂")
 
 # 1. Show the data
 st.write('''
