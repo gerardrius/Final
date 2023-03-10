@@ -337,6 +337,11 @@ def datetime_format_trucks (df):
     df['next_start_time'] = next_start_time
     return df
 
+# Split dataframe into n subdataframes to be uploaded to drive and run distance function to them.
+def dataframe_split (df, n):
+    april_split = np.array_split(df, n)
+    for i in range(len(april_split)):
+        april_split[i].to_csv(f'data/splitted_csv/split_{i}.csv')
 
     # CLEAN NEW FORMAT
 def trip_duration (df):
