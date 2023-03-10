@@ -1,7 +1,42 @@
+    # Libraries
+import pandas as pd
+
+# For maps
+import folium.plugins
+from folium import Figure
+from folium.plugins import HeatMapWithTime
+
+
+
+
     # Trip
 
 
     # Station
+# Heatmap with hourly activity
+def testfunct (df, day):
+    test_map_viz = df[['start_hour', 'started_at', 'bike_id', 'start_lat', 'start_lng', 'weekday']]
+    test_map_viz = test_map_viz[test_map_viz['weekday'] == day]
+
+    lat_lng_list = []
+    for i in range(24):
+        temp=[]
+        for index, row in test_map_viz[test_map_viz['start_hour'] == i].iterrows():
+            temp.append([row['start_lat'],row['start_lng']])
+        lat_lng_list.append(temp)
+
+    figure1 = Figure(width=850,height=550)
+    new_york1 = folium.Map(location=[40.712776, -74.005974],zoom_start=12)
+
+    figure1.add_child(new_york1)
+    folium.TileLayer('cartodbpositron').add_to(new_york1)
+    gradient = {.33: 'white', .66: 'lightblue', 1: 'blue'}
+
+    HeatMapWithTime(lat_lng_list, radius=5, auto_play=True, position='bottomright', gradient=gradient).add_to(new_york1)
+
+    return figure1
+
+
 # Stations with more starts
 def top_n_starts (df, n):
     top_n = df['start_station_name'].value_counts()[:n].to_frame().reset_index()
@@ -64,5 +99,7 @@ def your_station_data (df, station_name):
     all_stations_activity = top_busy_stations (df, all_instances)
 
     return all_stations_activity[all_stations_activity['Station Name'] == station_name]
+
+# 
 
     # Demographics

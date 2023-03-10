@@ -337,12 +337,6 @@ def datetime_format_trucks (df):
     df['next_start_time'] = next_start_time
     return df
 
-# Split dataframe into n subdataframes to be uploaded to drive and run distance function to them.
-def dataframe_split (df, n):
-    april_split = np.array_split(df, n)
-    for i in range(len(april_split)):
-        april_split[i].to_csv(f'data/splitted_csv/split_{i}.csv')
-
     # CLEAN NEW FORMAT
 def trip_duration (df):
     duration_list = []
@@ -360,3 +354,21 @@ def trip_duration (df):
     df['duration'] = duration_list
 
     return df
+
+
+    # FOR COLAB
+# Split dataframe into n subdataframes to be uploaded to drive and run distance function to them.
+def dataframe_split (df, n):
+    april_split = np.array_split(df, n)
+    for i in range(len(april_split)):
+        april_split[i].to_csv(f'data/splitted_csv/split_{i}.csv')
+
+# Upload csv's to Colab
+
+# And run this loop after passing the two functions required to get G and Real Distance
+'''
+for i in range(len(split_list)):
+  converting = get_real_distance (split_list[i])
+  converting.to_csv(f'split_{i}.csv', index = False)
+  files.download(f'split_{i}.csv')
+'''
