@@ -40,9 +40,12 @@ if interest == 'Stations':
     if specific_interest == 'AM/PM Trip Distribution':
         # day = st.select_slider('Select a day', options=('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'), label_visibility="visible")
 
-        st.write('Light blue: most trips start in the morning')
-
-        st.write('Dark blue: most trips start in the afternoon and onwards')
+        with st.expander("See explanation"):
+            st.write('''
+            The map below shows if a station have more trips started during the morning or the afternoon,
+            signaled with light and dark blue respectively.
+            ''')
+            # st.image("https://static.streamlit.io/examples/dice.jpg")
 
         figure4 = Figure(width=850,height=550)
         new_york4 = folium.Map(location=[40.7230679, -73.974965513],zoom_start=13)
@@ -67,15 +70,8 @@ if interest == 'Stations':
 
             new_marker.add_to(new_york4)
 
-        st_data = st_folium(figure4, width = 850)
+        st_map = st_folium(figure4, width = 850)
 
-        with st.expander("See explanation"):
-            st.write('''
-            The chart above shows some numbers I picked for you.
-            I rolled actual dice for these, so they're *guaranteed* to
-            be random.
-            ''')
-            # st.image("https://static.streamlit.io/examples/dice.jpg")
 
     elif specific_interest == 'Activity':
         n = st.selectbox('Choose the number of rows to be displayed:', [5, 10, 20, 50])
