@@ -37,6 +37,18 @@ What I want to do
     Deploy everything in streamlit app
     To start tomorrow with predictor
     
+14/3 What I did
+    Finished stations info
+    Deployed them in streamlit
+    All ok
+
+14/3 TO DO
+    START FIGURING OUT:
+    - Capacity of each of the goddamn station
+    - Put a number of bikes / free docks to each station by 15 min differences / for each weekday.
+    - Based on that, predict according to day and hour what is the availability of bikes/free docks for station
+
+    - Create the time calculator from A TO B!
     
 
 **Exploratory Data Analysis**

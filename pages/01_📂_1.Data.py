@@ -11,13 +11,13 @@ st.write('''
 Below you can dive deep into the resulting dataframes obtained after cleaning and enriching the initial files.
 ''')
 
-dataframe = st.selectbox('Choose one character', ['Bike trips', 'Truck trips'])
+dataframe = st.selectbox('Choose one topic', ['Bike trips', 'Truck trips'])
 n = st.selectbox('Choose the number of rows to be displayed', [5, 10, 20, 50])
 
 if dataframe == 'Bike trips':
     df = pd.read_csv('data/april_2014.csv')
 elif dataframe == 'Truck trips':
-    df = pd.read_csv('data/truck_transfers.csv')
+    df = pd.read_csv('data/truck_transfers.csv', index_col='Unnamed: 0')
 
 
 st.dataframe(st_cleaning.show_df_sample(df, n))
