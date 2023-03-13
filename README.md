@@ -25,6 +25,17 @@ What I want to achieve:
         Deploy them in Streamlit
 
     Distance function so that it saves results every x time.
+
+13/3
+What I have
+    Vis on demographics, overall info
+    Not real distance
+
+
+What I want to do
+    Finish stations info
+    Deploy everything in streamlit app
+    To start tomorrow with predictor
     
     
 
