@@ -1,20 +1,82 @@
     # Libraries
 import pandas as pd
+import numpy as np
 
 # For maps
 import folium.plugins
 from folium import Figure
 from folium.plugins import HeatMapWithTime
 
+# Graph Visualizations
+import seaborn as sns
+import matplotlib.pyplot as plt
+import folium
+import plotly.express as px
+
+# Map visualizations
+import folium.plugins
+from folium import Figure
+from folium.plugins import HeatMapWithTime
 
 
 
-    # Trip
+    # TRIP
+# Duration distribution
+def duration_distribution (df):
+    counts, bins = np.histogram(df.duration, bins=range(30, 3600, 60))
+    bins = 0.5 * (bins[:-1] + bins[1:])
+    fig = px.bar(x=bins, y=counts, labels={'x':'Duration (in seconds)', 'y':'Frequency'}, color_discrete_sequence =['darkblue']*len(df), title = 'Trip Duration Distribution')
+    return fig
+
+# Displacement distribution
+def displacement_distribution (df):
+    counts, bins = np.histogram(df.distance, bins=range(50, 5000, 100))
+    bins = 0.5 * (bins[:-1] + bins[1:])
+    fig = px.bar(x=bins, y=counts, labels={'x':'Displacement (in meters)', 'y':'Frequency'}, color_discrete_sequence =['darkblue']*len(df), title = 'Trip Displacement Distribution')
+    return fig
+
+# Average pace
+def average_pace_distribution (df):
+    avg_pace_df = df
+    average_pace = []
+    for i, row in df.iterrows():
+        average_pace.append(row['distance'] / row['duration'] * 3.6)
+    
+    avg_pace_df['average_pace'] = average_pace
+
+    counts, bins = np.histogram(avg_pace_df.average_pace, bins=range(1, 20, 1))
+    bins = 0.5 * (bins[:-1] + bins[1:])
+
+    fig = px.bar(x=bins, y=counts, labels={'x':'Average Pace (in km/h)', 'y':'Frequency'}, color_discrete_sequence =['darkblue']*len(df), title = 'Trip Average Pace Distribution')
+    return fig
+
+# Trips monthly
+def monthly_trips (df):
+    month_df = df
+    trip = [1]*month_df.shape[0]
+    month_df['trip_sum'] = trip
+    grouped_by_date = month_df[['trip_date', 'trip_sum']].groupby(by = ['trip_date']).sum().reset_index(drop=False)
+
+    plot_df = grouped_by_date
+    fig = px.area(plot_df, x='trip_date', y='trip_sum', labels={'trip_date':'Trip Date', 'trip_sum':'Number of Trips'}, color_discrete_sequence =['darkblue']*len(df), title = 'Trip Time Series')
+    return fig
+
+# Trips by day
+def trips_by_day (df):
+    fig = px.histogram(df, x='weekday', range_y=(80000, 110000), labels={'count':'Total of occurrences', 'weekday':'Weekday'}, color_discrete_sequence =['darkblue']*len(df), title = 'Trips by Weekday')
+    return fig
+
+# Trips by hours
+def trips_by_hour (df):
+    fig = px.histogram(df, x='start_hour', labels={'count':'Total of occurrences', 'start_hour':'Hour'}, color_discrete_sequence =['darkblue']*len(df), title = 'Trips by Hour')
+    fig.update_layout(bargap = 0.06)
+    return fig
 
 
-    # Station
+
+    # STATION
 # Heatmap with hourly activity
-def testfunct (df, day):
+def heatmapWithTime (df, day):
     test_map_viz = df[['start_hour', 'started_at', 'bike_id', 'start_lat', 'start_lng', 'weekday']]
     test_map_viz = test_map_viz[test_map_viz['weekday'] == day]
 
@@ -100,6 +162,120 @@ def your_station_data (df, station_name):
 
     return all_stations_activity[all_stations_activity['Station Name'] == station_name]
 
-# 
+# Starts distribution
+def starts_distribution (df):
+    figure4 = Figure(width=850,height=550)
+    new_york4 = folium.Map(location=[40.7230679, -73.974965513],zoom_start=13)
 
-    # Demographics
+    folium.TileLayer('cartodbpositron').add_to(new_york4)
+    figure4.add_child(new_york4)
+
+    grouped_df = df[['start_station_name', 'start_lat', 'start_lng', 'duration', 'start_hour']].groupby(by=['start_station_name']).mean().reset_index()
+    grouped_df['am_pm'] = grouped_df['start_hour'].apply(lambda x: 'AM' if x < 14 else 'PM')
+
+    for i, row in grouped_df.iterrows():
+
+        marker = {'location': [row['start_lat'], row['start_lng']], 'tooltip': 'Citi Bike Station'}
+
+        if row['am_pm'] == 'AM':
+            icon = folium.Icon(color='lightblue', icon='')
+
+        elif row['am_pm'] == 'PM':
+            icon = folium.Icon(color='darkblue', icon='')
+
+        new_marker = folium.Marker(**marker, icon = icon, radius = 2)
+
+        new_marker.add_to(new_york4)
+
+    return figure4
+
+def ends_distribution (df):
+    figure5 = Figure(width=850,height=550)
+    new_york5 = folium.Map(location=[40.7230679, -73.974965513],zoom_start=13)
+
+    folium.TileLayer('cartodbpositron').add_to(new_york5)
+    figure5.add_child(new_york5)
+
+    grouped_df = df[['end_station_name', 'end_lat', 'end_lng', 'duration', 'start_hour']].groupby(by=['end_station_name']).mean().reset_index()
+    grouped_df['am_pm'] = grouped_df['start_hour'].apply(lambda x: 'AM' if x < 14 else 'PM')
+
+    for i, row in grouped_df.iterrows():
+
+        marker = {'location': [row['end_lat'], row['end_lng']], 'tooltip': 'Citi Bike Station'}
+
+        if row['am_pm'] == 'AM':
+            icon = folium.Icon(color='lightblue', icon='')
+
+        elif row['am_pm'] == 'PM':
+            icon = folium.Icon(color='darkblue', icon='')
+
+        new_marker = folium.Marker(**marker, icon = icon, radius = 2)
+
+        new_marker.add_to(new_york5)
+
+    return figure5
+
+
+    # DEMOGRAPHICS
+# Age distribution (by gender, not by user type since customers do not set neither gender nor age)
+def age_distribution (df):
+    age_gender = df[(df['gender'] == 1) | (df['gender'] == 2)]
+    age_gender['gender'] = age_gender['gender'].apply(lambda x: 'Male' if x == 1 else 'Female')
+
+    years_list = [str(i) for i in range(1940, 1998)]
+
+    age_gender['birth_year'] = age_gender['birth_year'].apply(lambda x: int(x) if x in years_list else np.nan)
+    age_gender = age_gender.groupby(['gender', 'birth_year']).size().to_frame()
+    age_gender = age_gender.reset_index()
+    age_gender.rename(columns={0: 'count'}, inplace = True)
+
+    fig = px.area(age_gender, 
+        x='birth_year',
+        y= 'count',
+        color = 'gender',
+        labels={'birth_year': 'Birth Year', 'count': 'Number of Users'},
+        color_discrete_map = {'Male': 'blue', 'Female': 'darkblue'}, 
+        title = 'User Age Distribution')
+    return fig
+
+# Gender distribution
+def gender_distribution (df, day):
+    gender = df[df['weekday'] == day]
+    gender = gender[(gender['gender'] == 1) | (gender['gender'] == 2)]
+    gender['gender'] = gender['gender'].apply(lambda x: 'Male' if x == 1 else 'Female')
+    gender['val'] = [1]*gender.shape[0]
+
+    figure_gender = px.pie(gender, values = 'val', names = 'gender', color = 'gender', color_discrete_map={'Male':'blue', 'Female':'darkblue'})
+    figure_gender.update_traces(textposition='inside', textinfo='percent+label')
+    return figure_gender
+
+# User type distribution
+def user_type (df, day):
+    user_df = df[df['weekday'] == day]
+    user_df['val'] = [1]*user_df.shape[0]
+
+    figure_member = px.pie(user_df, values = 'val', names = 'member_casual', color = 'member_casual', color_discrete_map={'Subscriber':'blue', 'Customer':'darkblue'})
+    figure_member.update_traces(textposition='inside', textinfo='percent+label')
+    return figure_member
+
+# Number and percentage of users having not defined neither age nor gender
+def age_not_defined (df):
+    # This code provides the number of not defined ages.
+    absolute_number = df[df['birth_year'] == '\\N'].shape[0]
+    relative_number = absolute_number / df.shape[0]
+    return (absolute_number, relative_number)
+
+def gender_not_defined (df):
+    absolute_number = df[df['gender'] == 0].shape[0]
+    relative_number = absolute_number /df.shape[0]
+    return (absolute_number, relative_number)
+
+
+
+# Get all stations
+def get_all_stations (df):
+    all_start = df['start_station_name'].unique().tolist()
+    all_end = df['end_station_name'].unique().tolist()
+    all_start.extend(all_end)
+    return list(set(all_start))
+

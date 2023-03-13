@@ -1,16 +1,30 @@
-import streamlit as st
-
+# Basics
 import pandas as pd
+import numpy as np
 
-import src.cleaning as cleaning
+# Functions
 import src.visualizations as visual
-import plotly.express as px
-import codecs
-import streamlit.components.v1 as components
-import folium
-from streamlit_folium import st_folium, folium_static
-from folium import Figure #, HeatMapWithTime
 
+# Streamlit
+import streamlit as st
+import streamlit.components.v1 as components
+import codecs
+from PIL import Image
+
+# Graph Visualizations
+import seaborn as sns
+import matplotlib.pyplot as plt
+import folium
+import plotly.express as px
+
+# For maps
+import folium
+import folium.plugins
+from folium import Figure
+from folium.plugins import HeatMapWithTime
+from streamlit_folium import st_folium, folium_static
+
+# Visualizations page configuraiton
 st.set_page_config(
     page_title = 'Visualizations on Citi Bike Service', 
     page_icon = '📊',
@@ -18,96 +32,124 @@ st.set_page_config(
     initial_sidebar_state = 'expanded',
 )
 
-st.sidebar.markdown('')
-
-interest = st.sidebar.selectbox('Subcategories', ['Introduction', 'Stations', 'Overall Trip Information', 'Demographics'])
-
-# 1. Show the data
-st.title("Overview of NYC Citi Bike Service")
-
-# interest = st.selectbox('What Citi Bike feature interests you the most?', ['Stations', 'Overall Trip Information', 'Demographics'])
-# st.write(f'You selected: {interest}')
-
-
 df = pd.read_csv('data/april_2014.csv')
 
+tab1, tab2, tab3, tab4 = st.tabs(['🔍 Introduction' ,'🚲 Stations', '📊 Overall Trip Information', '👥 Demographics'])
 
-if interest == 'Introduction':
-    st.subtitle('Welcome to NYC Citi Bike reports!')
-        
-    st.write('In this page, you will find all kind of data, statistics and visualizations that will help you understand the public usageof NYC Citi Bike Service. You can choose among three categories to dive deeper into.')
-    # It would be nice to have some images with stations, trips and demographics and clicking them drives you to the actual subpage!
+# 1. Introduction
+tab1.title("Overview of NYC Citi Bike Service")
 
+tab1.header('Welcome to NYC Citi Bike reports!')
 
-# STATIONS
-elif interest == 'Stations':
+tab1.markdown('In this page, you will find all kind of data, statistics and visualizations that will help you understand the public usage of NYC Citi Bike Service. You can choose among three categories to dive deeper into **Overall Trip Information**, **Stations** and **Demographics**.')
 
-    # Available plots: stations activity (with pick yours), AM/PM Map (should include button for starts or ends), Monthly/Weekday animation heatmap (cool if kepler or something).
-    specific_interest = st.selectbox(f'What insights on {interest} would you like to visualize?', ['Activity', 'AM/PM Trip Distribution', 'Monthly Animation'])
+introduction_image = Image.open('pages/images/introduction.jpg')
 
-
-    if specific_interest == 'AM/PM Trip Distribution':
-        # day = st.select_slider('Select a day', options=('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'), label_visibility="visible")
-
-        with st.expander("See explanation"):
-            st.write('''
-            The map below shows if a station have more trips started during the morning or the afternoon,
-            signaled with light and dark blue respectively.
-            ''')
-            # st.image("https://static.streamlit.io/examples/dice.jpg")
-
-        figure4 = Figure(width=850,height=550)
-        new_york4 = folium.Map(location=[40.7230679, -73.974965513],zoom_start=13)
-
-        folium.TileLayer('cartodbpositron').add_to(new_york4)
-        figure4.add_child(new_york4)
-
-        grouped_df = df[['start_station_name', 'start_lat', 'start_lng', 'duration', 'start_hour']].groupby(by=['start_station_name']).mean().reset_index()
-        grouped_df['am_pm'] = grouped_df['start_hour'].apply(lambda x: 'AM' if x < 14 else 'PM')
-
-        for i, row in grouped_df.iterrows():
-
-            marker = {'location': [row['start_lat'], row['start_lng']], 'tooltip': 'Citi Bike Station'}
-
-            if row['am_pm'] == 'AM':
-                icon = folium.Icon(color='lightblue', icon='')
-
-            elif row['am_pm'] == 'PM':
-                icon = folium.Icon(color='darkblue', icon='')
-
-            new_marker = folium.Marker(**marker, icon = icon, radius = 2)
-
-            new_marker.add_to(new_york4)
-
-        st_map = st_folium(figure4, width = 850)
+tab1.image(introduction_image, caption = 'Citi Station in NYC')
 
 
-    elif specific_interest == 'Activity':
-        n = st.selectbox('Choose the number of rows to be displayed:', [5, 10, 20, 50])
-        st.dataframe(visual.top_busy_stations(df, n))
+# Stations
 
-        all_stations = sorted((visual.top_busy_stations (df, 330))['Station Name'].unique())
+tab2.title("Stations' Activity and Stats")
 
-        your_station = st.selectbox('What is your station of interest?', all_stations)            
+tab2.header('Get the most information about Citi Stations!')
 
-        st.write('Your station have the following activity stats:')
+your_station = tab2.selectbox('Pick your favorite station!', visual.get_all_stations (df))
+if your_station:
+    tab2.dataframe(visual.your_station_data (df, your_station))
 
-        st.dataframe(visual.your_station_data(df, your_station))
+starts_classification = tab2.checkbox('Stations with the most trips started')
+if starts_classification:
+    n1 = tab2.select_slider('Select how many results to be shown', options = range(1, 101))
+    tab2.dataframe(visual.top_n_starts(df, n1))
 
-# OVERALL CITI STATS
-elif interest == 'Overall Trip Information':
-    
-    # Available plots: duration, displacement, average pace, Monthly trips, trips by weekday, in a selectbox
-    st.selectbox('What you wish to see?', ['Trip duration', 'Trip distance', 'Trip average pace', 'Monthly trips', 'Trips by weekday'])
+ends_classification = tab2.checkbox('Stations with the most trips ended')
+if ends_classification:
+    n2 = tab2.select_slider('Select how many results to be shown', options = range(1, 101))
+    tab2.dataframe(visual.top_n_ends(df, n2))
 
-    # For this visualizations, it would be nice to be able to put color / divide somehow by gender and user type according to app user interests
+most_busy_stations = tab2.checkbox('Most busy stations overall')
+if most_busy_stations:
+    n3 = tab2.select_slider('Select how many results to be shown', options = range(1, 101))
+    tab2.dataframe(visual.top_busy_stations(df, n3))
+
+starts_map = tab2.checkbox('Starts Distribution (AM/PM)')
+if starts_map:
+    tab2.markdown(':blue[Light blue]: most starts in the **morning**.')
+
+    tab2.markdown(':blue[Light blue]: most starts in the **evening**.')
+    with tab2:
+        st_folium(visual.starts_distribution(df), width = 850)
+
+ends_map = tab2.checkbox('Ends Distribution (AM/PM)')
+if ends_map:
+    tab2.markdown(':blue[Light blue]: most ends in the **morning**.')
+
+    tab2.markdown(':blue[Dark blue]: most ends in the **afternoon**.')
+
+    with tab2:
+        st_folium(visual.ends_distribution(df), width = 850)
+
+# plot_heatmap = tab2.checkbox('Hourly activivity this month')
+# if plot_heatmap:
+#     day = tab4.select_slider('Select a weekday', options=['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
+#     tab2.st_map = st_folium(visual.heatmapWithTime(df, day), width = 850)
 
 
-# DEMOGRAPHICS
-elif interest == 'Demographics':
-    # Available plots: age distribution, gender distribution, user type
+# Overall trip Information
+tab3.title('Overall Trip Information')
 
-    # you will have to change all df names in the test notebook so that each visualization has its own unique name
-    # and this file does not confuse them (specially those for birth year dist/age not defined)
-    pass
-    
+tab3.subheader('Choose the trip stats  below that interest you the most!')
+duration = tab3.checkbox('Trip Duration')
+if duration:
+    tab3.plotly_chart(visual.duration_distribution(df))
+
+displacement = tab3.checkbox('Trip Displacement')
+if displacement:
+    tab3.plotly_chart(visual.displacement_distribution(df))
+
+pace = tab3.checkbox('Trip Speed')
+if pace:
+    tab3.plotly_chart(visual.average_pace_distribution(df))
+
+month = tab3.checkbox('Month Trips')
+if month:
+    tab3.plotly_chart(visual.monthly_trips(df))
+
+day = tab3.checkbox('Weekday Trips')
+if day:
+    tab3.plotly_chart(visual.trips_by_day(df))
+
+hour = tab3.checkbox('Hourly Trips')
+if hour:
+    tab3.plotly_chart(visual.trips_by_hour(df))
+
+
+# Demographics
+tab4.title('Demographics Information')
+
+tab4.subheader('Choose the demographic information below that interest you the most!')
+
+age_dist = tab4.checkbox('Age Distribution')
+if age_dist:
+    tab4.plotly_chart(visual.age_distribution(df))
+    col3, col4 = tab4.columns(2)
+    col3.metric('Number of users without age defined', f'{visual.age_not_defined (df)[0]}')
+    col4.metric('Percentage over total users', f'{round(visual.age_not_defined (df)[1], 3)*100}')
+
+gender_dist = tab4.checkbox('Gender Distribution')
+if gender_dist:
+
+    day = tab4.select_slider('Select a weekday', options=['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
+    tab4.write(f'Use by gender on {day}s.')
+    tab4.plotly_chart(visual.gender_distribution(df, day))
+
+    col1, col2 = tab4.columns(2)
+    col1.metric('Number of users without gender defined', f'{visual.gender_not_defined (df)[0]}')
+    col2.metric('Percentage over total users', f'{round(visual.gender_not_defined (df)[1], 3)*100}')
+
+user_type = tab4.checkbox('User Type Distribution')
+if user_type:
+    day = tab4.select_slider('Select a weekday', options=['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
+    tab4.write(f'Use by member or custimer on {day}s.')
+    tab4.plotly_chart(visual.user_type (df, day))
