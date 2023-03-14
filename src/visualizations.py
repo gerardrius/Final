@@ -278,4 +278,3 @@ def get_all_stations (df):
     all_end = df['end_station_name'].unique().tolist()
     all_start.extend(all_end)
     return list(set(all_start))
-
