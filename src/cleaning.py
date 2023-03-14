@@ -425,13 +425,44 @@ def truck_trips_coordinates (coordinates_origin, truck_df):
     return truck_df
 
 def time_difference (df):
-    df['last_end_time'] = pd.to_datetime(df['last_end_time'], infer_datetime_format = True)
-    df['next_start_time'] = pd.to_datetime(df['next_start_time'], infer_datetime_format = True)
-    
-    time_difference = []
-
-    for i, row in df.iterrows():
-        time_difference.append(row['next_start_time'] - row['last_end_time'])
-    
-    df['time_difference'] = time_difference
+    df['started_at'] = pd.to_datetime(df['started_at'], infer_datetime_format = True)
+    df['ended_at'] = pd.to_datetime(df['ended_at'], infer_datetime_format = True)
     return df
+
+def bike_human_truck_trips (df, bike_id):
+    last_end = df[df['bike_id'] == bike_id]['end_station_id'].to_list()[:-1]
+    etime = df[df['bike_id'] == bike_id]['ended_at'].to_list()[:-1]
+
+    next_start = df[df['bike_id'] == bike_id]['start_station_id'].to_list()[1:]
+    stime = df[df['bike_id'] == bike_id]['started_at'].to_list()[1:]
+
+    result_df = pd.DataFrame({'last_end': last_end, 'ended_at': etime, 'next_start': next_start, 'started_at': stime})
+    
+    result_df = time_difference(result_df)
+
+    result_df['time_difference'] = result_df['started_at'] - result_df['ended_at']
+
+    for i, row in result_df.iterrows():
+        if row['last_end'] != row['next_start']:
+            last_end.append(row['next_start'])
+            next_start.append(row['last_end'])
+            stime.append(row['ended_at'] + 0.2 * row['time_difference'])
+            etime.append(row['started_at'] - 0.2 * row['time_difference'])
+
+    result_df = pd.DataFrame({'last_end': last_end, 'ended_at': etime, 'next_start': next_start, 'started_at': stime})
+
+    result_df = time_difference(result_df)
+
+    last_trip_ends = result_df[['last_end', 'ended_at']].sort_values(by=['ended_at'], ascending=True).reset_index()
+    next_trip_starts = result_df[['next_start', 'started_at']].sort_values(by=['started_at'], ascending=True).reset_index()
+
+    final_df = pd.concat([last_trip_ends, next_trip_starts], axis=1, ignore_index=True)
+    final_df.rename(columns = {1: 'last_end', 2: 'ended_at', 4: 'next_start', 5: 'started_at'}, inplace = True)
+    final_df.drop([0, 3], axis = 1, inplace = True)
+
+    final_df = time_difference(final_df)
+
+    final_df['time_difference'] = final_df['started_at'] - final_df['ended_at']
+    final_df['bike_id'] = [bike_id]*final_df.shape[0]
+
+    return final_df
