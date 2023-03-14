@@ -4,8 +4,8 @@ import pydeck as pdk
 from urllib.error import URLError
 
 st.set_page_config(
-    page_title = "Test page", 
-    page_icon = "⚙️"
+    page_title = "Your Trip", 
+    page_icon = "🗺️"
 )
 
 

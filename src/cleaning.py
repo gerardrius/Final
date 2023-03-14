@@ -372,3 +372,66 @@ for i in range(len(split_list)):
   converting.to_csv(f'split_{i}.csv', index = False)
   files.download(f'split_{i}.csv')
 '''
+
+
+# FOR TRUCKS AND PREDICTIVE PART:
+
+def stations_coordinates (origin_df):
+    # Subdataframes with all stations with trip starts (both 329)
+    starts = origin_df[['start_station_id', 'start_station_name', 'start_lat', 'start_lng']].groupby(by=['start_station_name']).mean().reset_index()
+    ends = origin_df[['end_station_id', 'end_station_name', 'end_lat', 'end_lng']].groupby(by=['end_station_name']).mean().reset_index()
+
+    # Homogeneization of both dataframes
+    starts.rename(columns={'start_station_name': 'station_name', 'start_station_id': 'station_id', 'start_lat': 'lat', 'start_lng': 'lng'}, inplace = True)
+    ends.rename(columns={'end_station_name': 'station_name', 'end_station_id': 'station_id', 'end_lat': 'lat', 'end_lng': 'lng'}, inplace = True)
+
+    # Concatenation and removing duplicated stations (330 unique instances)
+    stations = pd.concat([starts, ends], join = 'outer', ignore_index = True)
+    stations = stations.drop_duplicates('station_name', ignore_index=True)
+
+    return stations
+
+def coordinate_columns (df):
+    last_station_lat = ['last_lat']*df.shape[0]
+    last_station_lng = ['last_lng']*df.shape[0]
+    next_station_lat = ['next_lat']*df.shape[0]
+    next_station_lng = ['next_lng']*df.shape[0]
+
+    df.insert(3, 'last_end_lat', last_station_lat)
+    df.insert(4, 'last_end_lng', last_station_lng)
+
+    df['next_start_lat'] = next_station_lat
+    df['next_start_lng'] = next_station_lng
+
+    return df
+
+def truck_trips_coordinates (coordinates_origin, truck_df):
+    last_lat = []
+    last_lng = []
+    next_lat = []
+    next_lng = []
+
+    for i, row in truck_df.iterrows():
+        last_lat.append(coordinates_origin[coordinates_origin['station_name'] == row['last_end_station_name']]['lat'].iloc[0])
+        last_lng.append(coordinates_origin[coordinates_origin['station_name'] == row['last_end_station_name']]['lng'].iloc[0])
+        next_lat.append(coordinates_origin[coordinates_origin['station_name'] == row['next_start_station_name']]['lat'].iloc[0])
+        next_lng.append(coordinates_origin[coordinates_origin['station_name'] == row['next_start_station_name']]['lng'].iloc[0])
+
+    truck_df['last_end_lat'] = last_lat
+    truck_df['last_end_lng'] = last_lng
+    truck_df['next_start_lat'] = next_lat
+    truck_df['next_start_lng'] = next_lng
+
+    return truck_df
+
+def time_difference (df):
+    df['last_end_time'] = pd.to_datetime(df['last_end_time'], infer_datetime_format = True)
+    df['next_start_time'] = pd.to_datetime(df['next_start_time'], infer_datetime_format = True)
+    
+    time_difference = []
+
+    for i, row in df.iterrows():
+        time_difference.append(row['next_start_time'] - row['last_end_time'])
+    
+    df['time_difference'] = time_difference
+    return df
