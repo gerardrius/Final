@@ -466,3 +466,13 @@ def bike_human_truck_trips (df, bike_id):
     final_df['bike_id'] = [bike_id]*final_df.shape[0]
 
     return final_df
+
+def concat_all_bike_trips (df):
+    df_list = []
+    for bike_id in df.bike_id.unique().tolist():
+        df_ = bike_human_truck_trips(df, bike_id)
+        df_list.append(df_)
+
+    ALL_TRIPS = pd.concat(df_list, ignore_index = True)
+    
+    return ALL_TRIPS
