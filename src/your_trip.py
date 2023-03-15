@@ -26,10 +26,17 @@ def rounder (num):
             return round(num, -1)
         else:
             return round(num, -1) + 10
+        
+def time_difference (df):
+    df['started_at'] = pd.to_datetime(df['started_at'], infer_datetime_format = True)
+    df['ended_at'] = pd.to_datetime(df['ended_at'], infer_datetime_format = True)
+    return df
 
 def station_load_time_series (df, id):
     id_starts = []
     id_ends = []
+
+    df = time_difference (df)
 
     for date in time_range:
         date_time_obj = datetime.strptime(date, '%Y-%m-%d T%H:%M')
