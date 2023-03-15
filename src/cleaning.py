@@ -511,7 +511,7 @@ def capacity_dictionary (df):
             difference_dict[row['id']].append(row['difference'])
 
     for key, value in difference_dict.items():
-        difference_dict[key] = max(value)
+        difference_dict[key] = rounder(max(value))
 
     return difference_dict
 
