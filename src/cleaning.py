@@ -4,7 +4,7 @@ import numpy as np
 
 # Trip duration
 import datetime
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Trip distance
 import geopy.distance
@@ -476,3 +476,56 @@ def concat_all_bike_trips (df):
     ALL_TRIPS = pd.concat(df_list, ignore_index = True)
     
     return ALL_TRIPS
+
+
+# Capacity calculator
+def capacity_dictionary (df):
+    difference_dict = {}
+    bench_date = '2014-05-01'
+    datetime_obj_bench = datetime.strptime(bench_date, '%Y-%m-%d')
+
+    df = time_difference(df)
+    ends = df[df['ended_at'] <= datetime_obj_bench].last_end.value_counts().to_frame().reset_index().rename(columns = {'index': 'id', 'last_end': 'counts'})
+    starts = df[df['started_at'] <= datetime_obj_bench].next_start.value_counts().to_frame().reset_index().rename(columns = {'index': 'id', 'next_start': 'counts'})
+
+    total = ends.merge(starts, how='outer', on='id')
+    total['difference'] = total['counts_x'] - total['counts_y']
+
+    for i, row in total.iterrows():
+        difference_dict[row['id']] = []
+
+    time_range = [dt.strftime('%Y-%m-%d') for dt in 
+       datetime_range(datetime(2014, 4, 1, 0), datetime(2014, 5, 1, 0, 5), 
+       timedelta(days=1))]
+
+    for date in time_range:
+        date_time_obj = datetime.strptime(date, '%Y-%m-%d')
+
+        ends = df[df['ended_at'] <= date_time_obj].last_end.value_counts().to_frame().reset_index().rename(columns = {'index': 'id', 'last_end': 'counts'})
+        starts = df[df['started_at'] <= date_time_obj].next_start.value_counts().to_frame().reset_index().rename(columns = {'index': 'id', 'next_start': 'counts'})
+
+        total = ends.merge(starts, how='outer', on='id')
+        total['difference'] = total['counts_x'] - total['counts_y']
+
+        for i, row in total.iterrows():
+            difference_dict[row['id']].append(row['difference'])
+
+    for key, value in difference_dict.items():
+        difference_dict[key] = max(value)
+
+    return difference_dict
+
+def datetime_range(start, end, delta):
+    current = start
+    while current < end:
+        yield current
+        current += delta
+
+def rounder (num):
+    if num <= 20:
+        return 20
+    else:
+        if round(num, -1) >= num:
+            return round(num, -1)
+        else:
+            return round(num, -1) + 10
