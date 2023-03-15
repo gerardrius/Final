@@ -15,7 +15,7 @@ st.header('📊 Exploratory Analysis')
 
 st.markdown('Each Citi Bike trip contain a lot of information: start station, end station, time of the day, etc., and, combining all trips together, we can reach interesting conclusions on the overall behavior of users. In the System Overview tab, you will find plenty of insights regarding **Stations**, **Demographics** and **Trip information**, which will for sure help you get a broader picture of the system as a whole')
 
-st.header('📍 Your Trip')
+st.header('🗺️ Your Trip')
 
 st.markdown("The main concerns of Citi Bike system users are bike and free docks availability in the start and end points respectively. 'Your Trip' section has been designed to tackle uncertainty and provide availability predictions for users to plan their trips with time margin.")
 

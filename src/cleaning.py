@@ -391,6 +391,13 @@ def stations_coordinates (origin_df):
 
     return stations
 
+def geo_points_stations (df):
+    coordinate_list = []
+    for i, row in df.iterrows():
+        coordinate_list.append((row['lat'], row['lng']))
+    df['coordinates'] = coordinate_list
+    return df
+
 def coordinate_columns (df):
     last_station_lat = ['last_lat']*df.shape[0]
     last_station_lng = ['last_lng']*df.shape[0]
