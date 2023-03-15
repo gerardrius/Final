@@ -23,8 +23,4 @@ elif dataframe == 'Truck trips':
 st.dataframe(st_cleaning.show_df_sample(df, n))
 
 
-st.write('''
-Source of file can be found here: https://citibikenyc.com/system-data
-''')
-
-# st.selectbox, botton trigger, input texto
+st.write('Source of file can be found at https://citibikenyc.com/system-data')
