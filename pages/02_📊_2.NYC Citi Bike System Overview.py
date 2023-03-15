@@ -48,7 +48,7 @@ introduction_image = Image.open('pages/images/introduction.jpg')
 tab1.image(introduction_image, caption = 'Citi Station in NYC')
 
 
-# Stations
+# 2. Stations
 
 tab2.title("Stations' Activity and Stats")
 
@@ -96,7 +96,7 @@ if ends_map:
 #     tab2.st_map = st_folium(visual.heatmapWithTime(df, day), width = 850)
 
 
-# Overall trip Information
+# 3. Overall trip Information
 tab3.title('Overall Trip Information')
 
 tab3.subheader('Choose the trip stats  below that interest you the most!')
@@ -125,7 +125,7 @@ if hour:
     tab3.plotly_chart(visual.trips_by_hour(df))
 
 
-# Demographics
+# 4. Demographics
 tab4.title('Demographics Information')
 
 tab4.subheader('Choose the demographic information below that interest you the most!')
