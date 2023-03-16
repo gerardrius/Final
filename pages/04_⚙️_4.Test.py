@@ -2,6 +2,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+from PIL import Image
 
 # Source functions
 import src.cleaning as cleaning
@@ -15,11 +16,11 @@ from datetime import datetime, timedelta
 import folium
 from folium import Figure
 from streamlit_folium import st_folium
+import matplotlib.pyplot as plt
 
 
 # For trip distance and time
-import taxicab as tc
-import math
+
 
 def datetime_range(start, end, delta):
     current = start
@@ -38,7 +39,7 @@ ALL_TRIPS = pd.read_csv('data/all_trips.csv')
 
 geolocator = Nominatim(user_agent="my_app")
 
-tab1, tab2, tab3 = st.tabs(['🚲 Your Trip' , '📈 Further Availability Information', '🔮 Behind Predictions'])
+tab1, tab2 = st.tabs(['🚲 Your Trip', '🔮 Behind Predictions'])
 
 # Introduction
 tab1.title("Plan your Bike Trip!")
@@ -140,15 +141,85 @@ if start and end:
     import osmnx as ox
     import networkx as nx
     import plotly.graph_objects as go
-    import numpy as np
+    import taxicab as tc
+    import math
 
     ox.config(log_console=True, use_cache=True)
-
+    
+    # Load the graph for New York City
     G = cleaning.get_graph_from_bbox (april)
 
+    # MAP PLOT!!!
+    # Walk 1
+    start_walk_1 = geolocator.geocode(from_where) # Takes input FROM WHERE
+    end_walk_1 = start_5.Coordinates.to_list()[0]
+
+    # Bike Trip
+    start_bike = start_5.Coordinates.to_list()[0]
+    end_bike = end_5.Coordinates.to_list()[0]
+
+    # Walk 2
+    start_walk_2 = end_5.Coordinates.to_list()[0]
+    end_walk_2 = geolocator.geocode(to_where) # Takes input TO WHERE
+
+    # Coordinates of first and last point -> from Geopy
+    start_walk_1 = (start_walk_1.latitude, start_walk_1.longitude)
+    end_walk_2 = (end_walk_2.latitude, end_walk_2.longitude)
+
+    # Get nodes for each point
+    start_walk_1_node = ox.nearest_nodes(G, start_walk_1[1], start_walk_1[0])
+    end_walk_1_node = ox.nearest_nodes(G, end_walk_1[1], end_walk_1[0])
+
+    start_bike_node = end_walk_1_node
+    end_bike_node = ox.nearest_nodes(G, end_bike[1], end_bike[0])
+
+    start_walk_2 = end_bike_node
+    end_walk_2 = ox.nearest_nodes(G, end_walk_2[1], end_walk_2[0])
+
+    # Routes
+    walk_1 = nx.shortest_path(G, start_walk_1_node, end_walk_1_node, weight='length')
+    bike_route = nx.shortest_path(G, start_bike_node, end_bike_node, weight='length')
+    walk_2 = nx.shortest_path(G, start_walk_2, end_walk_2, weight='length')
+
+    # Journey plot
+    rc1 = ['r'] * (len(walk_1) - 1)
+    rc2 = ['b'] * len(bike_route)
+    rc3 = ['r'] * (len(walk_2) -1)
+    rc = rc1 + rc2 + rc3
+    nc = ['r', 'r', 'b', 'b', 'r', 'r']
+    fig, ax = ox.plot_graph_routes(G, [walk_1, bike_route, walk_2], route_color = rc, node_size=0)
+
+    with tab1:
+        st.pyplot(fig)
+
+    walk_1_distance_time = trip.walk_distance_time(start_walk_1, end_walk_1, G)
+    walk_2_distance_time = trip.walk_distance_time(start_walk_2, end_walk_2, G)
+
+    bike_trip_distance_time = trip.bike_distance_time (start_bike, end_bike, G)
+
+    total_time = walk_1_distance_time[1] + bike_trip_distance_time[1] + walk_2_distance_time[1]
+
+    total_distance = walk_1_distance_time[0] + bike_trip_distance_time[0] + walk_2_distance_time[0]
+    tab1.markdown(f'**Distance**: {total_distance} meters,  divided in a {walk_1_distance_time[0] + walk_2_distance_time[0]}m walk and a {bike_trip_distance_time[0]}m ride.')   
+    tab1.markdown(f"**Expected duration**: {total_time} minutes, divided in a {walk_1_distance_time[1] + walk_2_distance_time[1]}' walk and a {bike_trip_distance_time[1]}' ride.")
 
 
+# TAB 2 -> Behind Predictions.
 
+tab2.header('Prediction System Explanation')
 
+tab2.markdown('As mentioned in the main page of the app, one of the biggest challenges of the project has been the predictive analysis of NYC Citi Bike System. The available data contained only "human trips", and further bike mobility was not taken into consideration (e.g. bike relocation, maintenance, etc.).')
 
+tab2.markdown('__Truck Mobility__ is extremely important to know exactly the position of each bike, which is identified by its unique Bike ID, at every time. With this information, it was possible to figure out an approximation of each Station Capacity, as well as bike and free docks availability in any point of time.')
 
+# Example distribution along the month
+
+tab2.markdown("From Station Availability Time Series, a Prophet Model was trained to further predict bike and free docks availability in a given station (usually the closest stations to user's initial location and destination). Below an example Station model prediction:")
+
+# Model plot forecast
+
+model_plot = Image.open('pages/images/model_plot.png')
+
+tab2.image(model_plot, caption = 'Model Plot with 24h Availability Forecast.')
+
+# model.plot_components(forecast);
