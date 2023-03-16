@@ -2,15 +2,24 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+
+# Source functions
 import src.cleaning as cleaning
 import src.your_trip as trip
-from prophet import Prophet
 
+# Availability Predictions & Time Series
+from prophet import Prophet
+from datetime import datetime, timedelta
+
+# Maps
 import folium
 from folium import Figure
 from streamlit_folium import st_folium
 
-from datetime import datetime, timedelta
+
+# For trip distance and time
+import taxicab as tc
+import math
 
 def datetime_range(start, end, delta):
     current = start
