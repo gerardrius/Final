@@ -76,3 +76,52 @@ def bike_distance_time (start, end, G):
         return round(route[0], 2), math.ceil((route[0])/(3.3*60)) # Assuming real pace is slightly greater than displacement pace, 2.5 -> 3.3
     except:
         return 0, 0
+    
+def station_example_function (df):
+    time_range = [dt.strftime('%Y-%m-%d T%H:%M') for dt in 
+    datetime_range(datetime(2014, 4, 1, 0), datetime(2014, 5, 1, 0, 5), 
+    timedelta(minutes=15))]
+
+    station_example = station_load_time_series (df, 519)
+    bike_availability = station_example[0]['bikes_in_station'].to_list()
+    time_range = time_range
+
+    time_series_df = pd.DataFrame({'time': time_range[:-1], 'bikes_available': bike_availability[:-1]})
+    time_series_df['time'] = pd.to_datetime(time_series_df['time'], infer_datetime_format = True)
+    time_series_df['docks_available'] = [station_example[1]]*time_series_df.shape[0] - time_series_df['bikes_available']
+
+    import plotly.graph_objects as go
+    import src.your_trip as trip
+
+    x = time_range
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        x = x, y = time_series_df['bikes_available'],
+        mode='lines',
+        line=dict(width=0.5, color='darkblue'),
+        stackgroup='one',
+        groupnorm='percent' # sets the normalization for the sum of the stackgroup
+    ))
+
+    fig.add_trace(go.Scatter(
+        x = x, y= time_series_df['docks_available'],
+        mode='lines',
+        line=dict(width=0.5, color='lightblue'),
+        stackgroup='one'
+    ))
+
+    fig.update_layout(
+        showlegend=True,
+        title = f'Time Series on bike Availability in an example Station',
+        xaxis_type='category',
+        
+        xaxis = go.XAxis(
+            title = 'Time',
+            showticklabels=False),
+
+        yaxis=dict(
+            type='linear',
+            range=[1, 100],
+            ticksuffix='%'))
+    return fig

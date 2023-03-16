@@ -208,18 +208,30 @@ if start and end:
 
 tab2.header('Prediction System Explanation')
 
-tab2.markdown('As mentioned in the main page of the app, one of the biggest challenges of the project has been the predictive analysis of NYC Citi Bike System. The available data contained only "human trips", and further bike mobility was not taken into consideration (e.g. bike relocation, maintenance, etc.).')
+tab2.markdown('As mentioned in the main page of the app, one of the biggest challenges of the project has been the predictive analysis of NYC Citi Bike System. The available data contained only _human trips_, whereas further bike mobility was not taken into consideration (e.g. bike relocation, maintenance, etc.).')
 
-tab2.markdown('__Truck Mobility__ is extremely important to know exactly the position of each bike, which is identified by its unique Bike ID, at every time. With this information, it was possible to figure out an approximation of each Station Capacity, as well as bike and free docks availability in any point of time.')
+tab2.markdown('In fact, _truck mobility_ was extremely important to get an accurate picture of the exact position of each bike, which is identified by its unique Bike ID, at each time. Only by having this information, it is possible to figure out the number of bikes and free docks in each Station at any time point, as well as the maximum station capacity, which can be assumed to be the maximum number of bikes recorded in a station during the whole time period.')
+
+tab2.markdown('Consequently, to solve this puzzle, I created a parallel dataframe containing all _non-human trips_. Each _truck trip_ was obtained by checking if a unique Bike ID did not start a trip in the same station where it ended the previous one. If this was the case, it meant that an instance of a _non-human trip_ took place, so it was appended to the parallel dataframe. Once all trips of both kinds were recorded, their corresponding dataframes were merged and the enigma was solved!')
+
 
 # Example distribution along the month
 
-tab2.markdown("From Station Availability Time Series, a Prophet Model was trained to further predict bike and free docks availability in a given station (usually the closest stations to user's initial location and destination). Below an example Station model prediction:")
+tab2.markdown('The Time Series below shows the evolution of availability across time in an example station; an essential step to predict future availability. Dark blue area stands for bike availability percentage while light blue represents free docks proportion.')
+fig_example = trip.station_example_function (ALL_TRIPS)
+tab2.plotly_chart(fig_example)
 
 # Model plot forecast
+
+tab2.markdown("From Station Availability Time Series, a Prophet Model was trained to get the future prediction of bikes and free docks availability in a given station (usually the closest stations to user's initial location and destination respectively). Below there is the example station model and its prediction:")
 
 model_plot = Image.open('pages/images/model_plot.png')
 
 tab2.image(model_plot, caption = 'Model Plot with 24h Availability Forecast.')
 
-# model.plot_components(forecast);
+# Model Components
+tab2.markdown('Last but not least, model components provide an interesting picture and a valuable insight of the availability prediction over the studied time period, tackling overall trend, weekly and daily.')
+
+model_components = Image.open('pages/images/model_components.png')
+
+tab2.image(model_components, caption = 'Model Components divided by trend, weekly and daily.')
