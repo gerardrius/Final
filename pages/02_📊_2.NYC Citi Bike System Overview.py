@@ -60,7 +60,7 @@ if your_station:
 
 starts_classification = tab2.checkbox('Stations with the most trips started')
 if starts_classification:
-    n1 = tab2.select_slider('Select how many results to be shown', options = range(1, 101))
+    n1 = tab2.select_slider('Select how many instances to be shown', options = range(1, 101))
     tab2.dataframe(visual.top_n_starts(df, n1))
 
 ends_classification = tab2.checkbox('Stations with the most trips ended')
@@ -70,7 +70,7 @@ if ends_classification:
 
 most_busy_stations = tab2.checkbox('Most busy stations overall')
 if most_busy_stations:
-    n3 = tab2.select_slider('Select how many results to be shown', options = range(1, 101))
+    n3 = tab2.select_slider('Select number of results to be shown', options = range(1, 101))
     tab2.dataframe(visual.top_busy_stations(df, n3))
 
 starts_map = tab2.checkbox('Starts Distribution (AM/PM)')
@@ -140,7 +140,7 @@ if age_dist:
 gender_dist = tab4.checkbox('Gender Distribution')
 if gender_dist:
 
-    day = tab4.select_slider('Select a weekday', options=['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
+    day = tab4.select_slider('Select a weekday ', options=['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
     tab4.write(f'Use by gender on {day}s.')
     tab4.plotly_chart(visual.gender_distribution(df, day))
 
@@ -151,5 +151,5 @@ if gender_dist:
 user_type = tab4.checkbox('User Type Distribution')
 if user_type:
     day = tab4.select_slider('Select a weekday', options=['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
-    tab4.write(f'Use by member or custimer on {day}s.')
+    tab4.write(f'Use by member or customer on {day}s.')
     tab4.plotly_chart(visual.user_type (df, day))
