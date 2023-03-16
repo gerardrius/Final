@@ -38,7 +38,7 @@ tab1, tab2, tab3, tab4 = st.tabs(['🔍 Introduction' ,'🚲 Stations', '📊 Ov
 
 # 1. Introduction
 tab1.title("Overview of NYC Citi Bike Service")
-
+ 
 tab1.header('Welcome to NYC Citi Bike reports!')
 
 tab1.markdown('In this page, you will find all kind of data, statistics and visualizations that will help you understand the public usage of NYC Citi Bike Service. You can choose among three categories to dive deeper into **Overall Trip Information**, **Stations** and **Demographics**.')

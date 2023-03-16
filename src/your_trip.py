@@ -113,7 +113,7 @@ def station_example_function (df):
 
     fig.update_layout(
         showlegend=True,
-        title = f'Time Series on bike Availability in an example Station',
+        title = f'Time Series on bike Availability in an example Station', 
         xaxis_type='category',
         
         xaxis = go.XAxis(

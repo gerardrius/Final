@@ -216,6 +216,7 @@ tab2.markdown('In fact, _truck mobility_ was extremely important to get an accur
 
 tab2.markdown('Consequently, to solve this puzzle, I created a parallel dataframe containing all _non-human trips_. Each _truck trip_ was obtained by checking if a unique Bike ID did not start a trip in the same station where it ended the previous one. If this was the case, it meant that an instance of a _non-human trip_ took place, so it was appended to the parallel dataframe. Once all trips of both kinds were recorded, their corresponding dataframes were merged and the enigma was solved!')
 
+tab2.subheader('Obtention of a Station Availability Time Series')
 
 # Example distribution along the month
 
@@ -224,6 +225,8 @@ fig_example = trip.station_example_function (ALL_TRIPS)
 tab2.plotly_chart(fig_example)
 
 # Model plot forecast
+
+tab2.subheader('Prophet Model Application') 
 
 tab2.markdown("From Station Availability Time Series, a Prophet Model was trained to get the future prediction of bikes and free docks availability in a given station (usually the closest stations to user's initial location and destination respectively). Below there is the example station model and its next 24h prediction:")
 

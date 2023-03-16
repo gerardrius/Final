@@ -21,4 +21,4 @@ elif dataframe == 'All trips':
     df = pd.read_csv('data/all_trips.csv')
 
 
-st.dataframe(st_cleaning.show_df_sample(df, n))
+st.dataframe(st_cleaning.show_df_sample(df, n)) 
