@@ -270,7 +270,7 @@ def gender_not_defined (df):
     relative_number = absolute_number /df.shape[0]
     return (absolute_number, relative_number)
 
-
+ 
 
 # Get all stations
 def get_all_stations (df):

@@ -125,6 +125,7 @@ if hour:
     tab3.plotly_chart(visual.trips_by_hour(df))
 
 
+
 # 4. Demographics
 tab4.title('Demographics Information')
 

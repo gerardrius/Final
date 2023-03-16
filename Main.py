@@ -7,7 +7,7 @@ st.set_page_config(
     page_icon="🚲",
 ) 
 
-st.title('🚲 NYC Citi Bike Study')
+st.title('🚲 NYC Citi Bike Study') 
 
 st.markdown('The purpose of this app is to make NYC Citi Bike Service data available and to anyone and understandable in a visual and intuitive way. The project is divided in two parts: an exploratory analysis on monthly trips, and a trip prediction tool designed for the end user to plan a trip ahead.')
 
@@ -16,7 +16,7 @@ st.image(cover)
 
 st.subheader('📊 Exploratory Analysis')
 
-st.markdown('Each Citi Bike trip contain a lot of information: start station, end station, time of the day, etc., and, combining all trips together, we can reach interesting conclusions on the overall behavior of users. In the System Overview tab, you will find plenty of insights regarding **Stations**, **Demographics** and **Trip information**, which will for sure help you get a broader picture of the system as a whole')
+st.markdown('Each Citi Bike trip contain a lot of information: start station, end station, time of the day, etc., and, combining all trips together, we can reach interesting conclusions on the overall behavior of users. In the System Overview tab, you will find plenty of insights regarding **Stations**, **Demographics** and **Trip information**, which will for sure help you get a broader picture of the system as a whole.')
 
 st.subheader('🗺️ Your Trip')
 

@@ -110,7 +110,7 @@ def station_example_function (df):
         line=dict(width=0.5, color='lightblue'),
         stackgroup='one'
     ))
-
+ 
     fig.update_layout(
         showlegend=True,
         title = f'Time Series on bike Availability in an example Station', 

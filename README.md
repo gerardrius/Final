@@ -1,93 +1,18 @@
-# Final-Project
+# 🚲 NYC Citi Bike Study
+The purpose of this app is to make NYC Citi Bike Service data available and to anyone and understandable in a visual and intuitive way. The project is divided in two parts: an exploratory analysis on monthly trips, and a trip prediction tool designed for the end user to plan a trip ahead.
 
-09/03/2023:
-What I have achieved:
+## 📊 Exploratory Analysis
+Each Citi Bike trip contain a lot of information: start station, end station, time of the day, etc., and, combining all trips together, we can reach interesting conclusions on the overall behavior of users. In the System Overview tab, you will find plenty of insights regarding Stations, Demographics and Trip information, which will for sure help you get a broader picture of the system as a whole.
 
+![heavy gif](pages/images/overview.gif)
 
-What I want to do:
-    Figure out truck pick ups
-    Big files
-    Streamlit app deployment
+## 🗺️ Your Trip
+The main concerns of Citi Bike system users are bike and free docks availability in the start and end points respectively. 'Your Trip' section has been designed to tackle uncertainty and provide availability predictions for users to plan their trips with time margin.
 
-10/03/2023
-What I achieved yesterday:
-    Big files
-    Deployed app
-    Started visualizations for maps
+![another heavy gif](pages/images/your_trip.gif)
 
-What I want to achieve:
-    Classify visualizations
-        Stations
-        Demographics
-        Trip information
+## 📁 Data Sources
+For Data enthusiasts, there is another section including samples of the main dataframes used for the project. In addition, code is fully available in the GitHub repository of the project, containing all functions and processes to clean and enrich data, plot visualizations and power the prediction app.
 
-    Encapsulate into functions
-        Deploy them in Streamlit
-
-    Distance function so that it saves results every x time.
-
-13/3
-What I have
-    Vis on demographics, overall info
-    Not real distance
- 
-
-What I want to do
-    Finish stations info
-    Deploy everything in streamlit app
-    To start tomorrow with predictor
-    
-14/3 What I did
-    Finished stations info
-    Deployed them in streamlit
-    All ok
-
-14/3 TO DO
-    START FIGURING OUT:
-    - Capacity of each of the goddamn station
-    - Put a number of bikes / free docks to each station by 15 min differences / for each weekday.
-    - Based on that, predict according to day and hour what is the availability of bikes/free docks for station
-
-    - Create the time calculator from A TO B!
-    
-
-**Exploratory Data Analysis**
-
-Cleaning process:
-
-- Prepare data (cleaning and enriching)
-
-    - Add new information (trip distance, duration, start district, end district, trip cost)
-
-- Upload data to SQL
-
-Query database to plot and visualize:
-
-- Yearly trips (Time Series)
-- Start and end points with Heatmap, allowing user to choose periods
-- Citi Bike Stations in New York (Map Plot)
-- Most used Stations
-- Trip distance and duration (correlation) find routes
-- Bikes Data (Electric vs. Classic, Most used bikes, etc.) make supervised learning classification model 
-- Membership Analysis (Revenue Stream, Pie Chart, Subsidies, etc.)
-
-- Try to obtain most common routes (some Google Maps resource to calculate possible routes from A to B, bike rails available) to plot heatmaps and suggest potential bike rail improvements.
-
-**Predictive Data Analysis**
-
-Use data to develop some models that are useful to:
-
-- Predict trip real duration from user's initial location and desired destination (using user start and end location, and time input) 
-    
-    - Take into account distance to closest station, bike availability, closest station to end point, availability, etc.)
-
-
-- Suggest operation routes ro relocate bikes among stations. 
-
-- Predict short term specific station availability and general use rate for Citi system.
-
-OSM Open Street Maps OSM nx.
-
-
-Bibliography
-Boeing, G. 2017. OSMnx: New Methods for Acquiring, Constructing, Analyzing, and Visualizing Complex Street Networks. Computers, Environment and Urban Systems 65, 126-139. doi:10.1016/j.compenvurbsys.2017.05.004
+## 🧩 Main Challenges of the Project
+NYC Citi Bike webpage contains plenty of public datasets with monthly trip information. For the Exploratory Analysis, the data available is excellent, it can lead to many conclusions and and meaningful insights. However, when it comes to predict future behaviour, a huge challenge is faced. There is some missing data with a really important weight, e.g. the initial number of bikes in each station at time 0, the number of bike movements by trucks, etc. Many have been figured out, others assumed, but the overall quality of the enriched dataframe has made it possible to reach significant predictions! 
